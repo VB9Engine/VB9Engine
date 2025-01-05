@@ -1,8 +1,3 @@
-Here's a refined README specifically for Android app encryption:
-
-
----
-
 VB9 Engine
 
 VB9 Engine - For Better Encrypting
@@ -75,7 +70,3 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 📩 Contact
 
 For questions, issues, or suggestions, open an issue or contact us at Telegram Channel Discussion or Ticket Topic!!
-
----
-
-Let me know if you'd like to add more technical details or implementation instructions!
