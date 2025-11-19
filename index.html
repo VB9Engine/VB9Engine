@@ -136,6 +136,57 @@
             color: #777;
         }
 
+        .attempts-container {
+            margin-top: 20px;
+            text-align: left;
+            display: none;
+        }
+
+        .attempts-container h3 {
+            color: #2575fc;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .attempt-list {
+            list-style-type: none;
+        }
+
+        .attempt-item {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .attempt-item.pending {
+            background-color: #f9f9f9;
+            color: #666;
+        }
+
+        .attempt-item.attempting {
+            background-color: #e6f2ff;
+            color: #2575fc;
+        }
+
+        .attempt-item.success {
+            background-color: #e7f7ef;
+            color: #2d8f5d;
+        }
+
+        .attempt-item.failed {
+            background-color: #fff8e6;
+            color: #b38b00;
+        }
+
+        .attempt-icon {
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 25px 20px;
@@ -164,6 +215,13 @@
 
         <div class="result-message" id="resultMessage"></div>
 
+        <div class="attempts-container" id="attemptsContainer">
+            <h3>Attempting to Open Settings</h3>
+            <ul class="attempt-list" id="attemptList">
+                <!-- Attempt items will be added dynamically -->
+            </ul>
+        </div>
+
         <div class="device-info" id="deviceInfo">
             <h3>Device Information</h3>
             <p id="platformInfo"></p>
@@ -178,6 +236,10 @@
 
     <script>
         document.getElementById('settingsButton').addEventListener('click', function() {
+            const button = this;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-cog fa-spin"></i> Attempting...';
+            
             // Show device information
             const deviceInfo = document.getElementById('deviceInfo');
             deviceInfo.style.display = 'block';
@@ -189,58 +251,165 @@
             document.getElementById('screenInfo').textContent = `Screen: ${screen.width} × ${screen.height}`;
 
             const resultMessage = document.getElementById('resultMessage');
+            const attemptsContainer = document.getElementById('attemptsContainer');
+            const attemptList = document.getElementById('attemptList');
+            
+            // Clear previous attempts
+            attemptList.innerHTML = '';
+            attemptsContainer.style.display = 'block';
+            
             let message = '';
             let messageClass = '';
+            let success = false;
 
-            // Try to open device settings based on platform
-            if (navigator.userAgent.match(/Android/i)) {
-                // Android - use proper intent for Settings app
-                try {
-                    // Method 1: Try to open Android Settings directly
-                    window.location.href = 'intent:#Intent;action=android.settings.SETTINGS;end';
-
-                    // Fallback if the above doesn't work
-                    setTimeout(function() {
-                        // Method 2: Alternative approach
-                        window.location.href = 'intent://settings/#Intent;package=com.android.settings;end';
-                    }, 100);
-
-                    message = 'Attempting to open Android Settings...';
-                    messageClass = 'success';
-                } catch (e) {
-                    message = 'Could not open settings directly. Please open Settings manually from your device.';
-                    messageClass = 'warning';
-                }
-            } else if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-                // iOS - try to open settings (limited browser support)
-                try {
-                    window.location.href = 'App-Prefs:';
-                    message = 'Attempting to open iOS Settings...';
-                    messageClass = 'success';
-                } catch (e) {
-                    message = 'Could not open settings directly. Please open Settings manually from your device.';
-                    messageClass = 'warning';
-                }
-            } else if (navigator.userAgent.match(/Windows/i)) {
-                // Windows - try to open settings
-                try {
-                    window.open('ms-settings:');
-                    message = 'Attempting to open Windows Settings...';
-                    messageClass = 'success';
-                } catch (e) {
-                    message = 'Could not open settings directly. Please open Settings manually from your device.';
-                    messageClass = 'warning';
-                }
-            } else {
-                // For other platforms or if above methods fail
-                message = 'Direct settings access not available for your platform. Please use your device\'s settings menu.';
-                messageClass = 'warning';
+            // Create a promise-based function to attempt settings opening
+            function attemptSettingsOpen(methodName, action, delay = 100) {
+                return new Promise((resolve) => {
+                    // Add attempt to UI
+                    const attemptItem = document.createElement('li');
+                    attemptItem.className = 'attempt-item attempting';
+                    attemptItem.innerHTML = `<span class="attempt-icon"><i class="fas fa-sync-alt fa-spin"></i></span> ${methodName}`;
+                    attemptList.appendChild(attemptItem);
+                    
+                    setTimeout(() => {
+                        try {
+                            if (typeof action === 'function') {
+                                action();
+                            } else {
+                                window.location.href = action;
+                            }
+                            
+                            // If we reach here, the action was successful
+                            attemptItem.className = 'attempt-item success';
+                            attemptItem.innerHTML = `<span class="attempt-icon"><i class="fas fa-check"></i></span> ${methodName} - Success`;
+                            resolve(true);
+                        } catch (e) {
+                            attemptItem.className = 'attempt-item failed';
+                            attemptItem.innerHTML = `<span class="attempt-icon"><i class="fas fa-times"></i></span> ${methodName} - Failed`;
+                            resolve(false);
+                        }
+                    }, delay);
+                });
             }
 
-            // Display result message
-            resultMessage.textContent = message;
-            resultMessage.className = 'result-message ' + messageClass;
-            resultMessage.style.display = 'block';
+            // Function to run all attempts sequentially
+            async function runAllAttempts() {
+                const userAgent = navigator.userAgent;
+                
+                if (userAgent.match(/Android/i)) {
+                    // Android attempts
+                    await attemptSettingsOpen(
+                        'Android Settings Intent', 
+                        'intent:#Intent;action=android.settings.SETTINGS;end'
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'Android Settings Package', 
+                        'intent://settings/#Intent;package=com.android.settings;end', 
+                        200
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'Android Settings URI', 
+                        'intent://android.settings.SETTINGS#Intent;end', 
+                        300
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'Android Settings Fallback', 
+                        () => {
+                            window.open('intent:#Intent;action=android.settings.SETTINGS;end', '_blank');
+                        }, 
+                        400
+                    );
+                    
+                } else if (userAgent.match(/iPhone|iPad|iPod/i)) {
+                    // iOS attempts
+                    await attemptSettingsOpen(
+                        'iOS App Preferences', 
+                        'App-Prefs:'
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'iOS Settings Root', 
+                        'App-Prefs:root=Settings'
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'iOS Settings Fallback', 
+                        () => {
+                            window.open('App-Prefs:', '_blank');
+                        }, 
+                        200
+                    );
+                    
+                } else if (userAgent.match(/Windows/i)) {
+                    // Windows attempts
+                    await attemptSettingsOpen(
+                        'Windows Settings URI', 
+                        'ms-settings:'
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'Windows Settings System', 
+                        'ms-settings:System'
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'Windows Settings Display', 
+                        'ms-settings:display'
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'Windows Settings Fallback', 
+                        () => {
+                            window.open('ms-settings:', '_blank');
+                        }, 
+                        200
+                    );
+                    
+                } else {
+                    // Generic attempts for other platforms
+                    await attemptSettingsOpen(
+                        'Generic Settings', 
+                        'settings:'
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'Generic System Preferences', 
+                        'systempreferences:'
+                    );
+                    
+                    await attemptSettingsOpen(
+                        'Generic Preferences', 
+                        'prefs:'
+                    );
+                }
+                
+                // Check if any attempt was successful
+                const successItems = document.querySelectorAll('.attempt-item.success');
+                success = successItems.length > 0;
+                
+                if (success) {
+                    message = 'Settings opened successfully!';
+                    messageClass = 'success';
+                } else {
+                    message = 'Could not open settings directly. Please open Settings manually from your device.';
+                    messageClass = 'warning';
+                }
+                
+                // Display result message
+                resultMessage.textContent = message;
+                resultMessage.className = 'result-message ' + messageClass;
+                resultMessage.style.display = 'block';
+                
+                // Reset button
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-cog"></i> Open Settings';
+            }
+            
+            // Start the attempts
+            runAllAttempts();
         });
     </script>
 </body>
