@@ -1,1 +1,1 @@
-_UnderDevelopment
+This Repository Is Build For iCON Mobile(Myanmar) and host the web to get access for navigation the device setting for FRP Process.
