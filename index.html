@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Device Settings Access</title>
+    <title>Android Device Settings Access</title>
     <style>
         * {
             margin: 0;
@@ -17,7 +17,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: #2575fc;
+            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
             padding: 20px;
         }
 
@@ -34,6 +34,12 @@
 
         .container:hover {
             transform: translateY(-5px);
+        }
+
+        .android-logo {
+            font-size: 3rem;
+            color: #3DDC84;
+            margin-bottom: 15px;
         }
 
         h1 {
@@ -73,6 +79,13 @@
 
         .settings-btn:active {
             transform: translateY(1px);
+        }
+
+        .settings-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .settings-btn i {
@@ -128,6 +141,12 @@
             background-color: #fff8e6;
             color: #b38b00;
             border: 1px solid #ffeeba;
+        }
+
+        .error {
+            background-color: #fdecea;
+            color: #d32f2f;
+            border: 1px solid #f5c2c7;
         }
 
         .reserve {
@@ -187,6 +206,32 @@
             font-size: 0.9rem;
         }
 
+        .android-version {
+            display: inline-block;
+            background-color: #3DDC84;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+            font-weight: 600;
+        }
+
+        .unsupported-device {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff8e6;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .unsupported-device i {
+            font-size: 2rem;
+            color: #b38b00;
+            margin-bottom: 10px;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 25px 20px;
@@ -206,11 +251,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>Device Settings Access</h1>
-        <p>Click the button below to quickly access your device settings. This will open the settings menu directly on your device.</p>
+        <div class="android-logo">
+            <i class="fab fa-android"></i>
+        </div>
+        <h1>Android Device Settings Access</h1>
+        <p>This tool helps you quickly access settings on your Android device <span class="android-version">Android 5-14</span>. Click the button below to open the settings menu directly.</p>
 
         <button class="settings-btn" id="settingsButton">
-            <i class="fas fa-cog"></i> Open Settings
+            <i class="fas fa-cog"></i> Open Android Settings
         </button>
 
         <div class="result-message" id="resultMessage"></div>
@@ -225,21 +273,29 @@
         <div class="device-info" id="deviceInfo">
             <h3>Device Information</h3>
             <p id="platformInfo"></p>
+            <p id="androidVersionInfo"></p>
             <p id="languageInfo"></p>
             <p id="timezoneInfo"></p>
             <p id="screenInfo"></p>
         </div>
 
-        <p class="note">Note: The exact behavior may vary depending on your device and browser. Some browsers may restrict direct access to device settings.</p>
+        <div class="unsupported-device" id="unsupportedDevice">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Unsupported Device</h3>
+            <p>This tool is designed specifically for Android devices (versions 5-14).</p>
+            <p>Your device appears to be incompatible with this feature.</p>
+        </div>
+
+        <p class="note">Note: The exact behavior may vary depending on your Android version and device manufacturer.</p>
         <p class="reserve"> 2025©iCON Mobile. All Right Reserve.</p>
     </div>
 
-    <script>
+        <script>
         document.getElementById('settingsButton').addEventListener('click', function() {
             const button = this;
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-cog fa-spin"></i> Attempting...';
-            
+
             // Show device information
             const deviceInfo = document.getElementById('deviceInfo');
             deviceInfo.style.display = 'block';
@@ -253,11 +309,11 @@
             const resultMessage = document.getElementById('resultMessage');
             const attemptsContainer = document.getElementById('attemptsContainer');
             const attemptList = document.getElementById('attemptList');
-            
+
             // Clear previous attempts
             attemptList.innerHTML = '';
             attemptsContainer.style.display = 'block';
-            
+
             let message = '';
             let messageClass = '';
             let success = false;
@@ -270,7 +326,7 @@
                     attemptItem.className = 'attempt-item attempting';
                     attemptItem.innerHTML = `<span class="attempt-icon"><i class="fas fa-sync-alt fa-spin"></i></span> ${methodName}`;
                     attemptList.appendChild(attemptItem);
-                    
+
                     setTimeout(() => {
                         try {
                             if (typeof action === 'function') {
@@ -278,7 +334,7 @@
                             } else {
                                 window.location.href = action;
                             }
-                            
+
                             // If we reach here, the action was successful
                             attemptItem.className = 'attempt-item success';
                             attemptItem.innerHTML = `<span class="attempt-icon"><i class="fas fa-check"></i></span> ${methodName} - Success`;
@@ -295,26 +351,26 @@
             // Function to run all attempts sequentially
             async function runAllAttempts() {
                 const userAgent = navigator.userAgent;
-                
+
                 if (userAgent.match(/Android/i)) {
                     // Android attempts
                     await attemptSettingsOpen(
                         'Android Settings Intent', 
                         'intent:#Intent;action=android.settings.SETTINGS;end'
                     );
-                    
+
                     await attemptSettingsOpen(
                         'Android Settings Package', 
                         'intent://settings/#Intent;package=com.android.settings;end', 
                         200
                     );
-                    
+
                     await attemptSettingsOpen(
                         'Android Settings URI', 
                         'intent://android.settings.SETTINGS#Intent;end', 
                         300
                     );
-                    
+
                     await attemptSettingsOpen(
                         'Android Settings Fallback', 
                         () => {
@@ -322,19 +378,19 @@
                         }, 
                         400
                     );
-                    
+
                 } else if (userAgent.match(/iPhone|iPad|iPod/i)) {
                     // iOS attempts
                     await attemptSettingsOpen(
                         'iOS App Preferences', 
                         'App-Prefs:'
                     );
-                    
+
                     await attemptSettingsOpen(
                         'iOS Settings Root', 
                         'App-Prefs:root=Settings'
                     );
-                    
+
                     await attemptSettingsOpen(
                         'iOS Settings Fallback', 
                         () => {
@@ -342,24 +398,24 @@
                         }, 
                         200
                     );
-                    
+
                 } else if (userAgent.match(/Windows/i)) {
                     // Windows attempts
                     await attemptSettingsOpen(
                         'Windows Settings URI', 
                         'ms-settings:'
                     );
-                    
+
                     await attemptSettingsOpen(
                         'Windows Settings System', 
                         'ms-settings:System'
                     );
-                    
+
                     await attemptSettingsOpen(
                         'Windows Settings Display', 
                         'ms-settings:display'
                     );
-                    
+
                     await attemptSettingsOpen(
                         'Windows Settings Fallback', 
                         () => {
@@ -367,29 +423,29 @@
                         }, 
                         200
                     );
-                    
+
                 } else {
                     // Generic attempts for other platforms
                     await attemptSettingsOpen(
                         'Generic Settings', 
                         'settings:'
                     );
-                    
+
                     await attemptSettingsOpen(
                         'Generic System Preferences', 
                         'systempreferences:'
                     );
-                    
+
                     await attemptSettingsOpen(
                         'Generic Preferences', 
                         'prefs:'
                     );
                 }
-                
+
                 // Check if any attempt was successful
                 const successItems = document.querySelectorAll('.attempt-item.success');
                 success = successItems.length > 0;
-                
+
                 if (success) {
                     message = 'Settings opened successfully!';
                     messageClass = 'success';
@@ -397,17 +453,17 @@
                     message = 'Could not open settings directly. Please open Settings manually from your device.';
                     messageClass = 'warning';
                 }
-                
+
                 // Display result message
                 resultMessage.textContent = message;
                 resultMessage.className = 'result-message ' + messageClass;
                 resultMessage.style.display = 'block';
-                
+
                 // Reset button
                 button.disabled = false;
                 button.innerHTML = '<i class="fas fa-cog"></i> Open Settings';
             }
-            
+
             // Start the attempts
             runAllAttempts();
         });
