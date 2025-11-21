@@ -3,469 +3,978 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Android Device Settings Access</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
-            padding: 20px;
-        }
-
-        .container {
-            background-color: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-            transition: transform 0.3s ease;
-        }
-
-        .container:hover {
-            transform: translateY(-5px);
-        }
-
-        .android-logo {
-            font-size: 3rem;
-            color: #3DDC84;
-            margin-bottom: 15px;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.8rem;
-        }
-
-        p {
-            color: #666;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-
-        .settings-btn {
-            background: #2575fc;
-            color: white;
-            border: none;
-            padding: 14px 35px;
-            font-size: 1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .settings-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 117, 252, 0.4);
-            background: #1a68e8;
-        }
-
-        .settings-btn:active {
-            transform: translateY(1px);
-        }
-
-        .settings-btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .settings-btn i {
-            margin-right: 8px;
-            font-size: 1.1rem;
-        }
-
-        .note {
-            margin-top: 20px;
-            font-size: 0.85rem;
-            color: #777;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-
-        .device-info {
-            margin-top: 25px;
-            padding: 15px;
-            background-color: #f0f7ff;
-            border-radius: 8px;
-            text-align: left;
-            display: none;
-        }
-
-        .device-info h3 {
-            color: #2575fc;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-
-        .device-info p {
-            margin-bottom: 5px;
-            color: #555;
-            font-size: 0.9rem;
-        }
-
-        .result-message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .success {
-            background-color: #e7f7ef;
-            color: #2d8f5d;
-            border: 1px solid #c1e8d1;
-        }
-
-        .warning {
-            background-color: #fff8e6;
-            color: #b38b00;
-            border: 1px solid #ffeeba;
-        }
-
-        .error {
-            background-color: #fdecea;
-            color: #d32f2f;
-            border: 1px solid #f5c2c7;
-        }
-
-        .reserve {
-            margin-top: 15px;
-            font-size: 0.8rem;
-            color: #777;
-        }
-
-        .attempts-container {
-            margin-top: 20px;
-            text-align: left;
-            display: none;
-        }
-
-        .attempts-container h3 {
-            color: #2575fc;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-
-        .attempt-list {
-            list-style-type: none;
-        }
-
-        .attempt-item {
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .attempt-item.pending {
-            background-color: #f9f9f9;
-            color: #666;
-        }
-
-        .attempt-item.attempting {
-            background-color: #e6f2ff;
-            color: #2575fc;
-        }
-
-        .attempt-item.success {
-            background-color: #e7f7ef;
-            color: #2d8f5d;
-        }
-
-        .attempt-item.failed {
-            background-color: #fff8e6;
-            color: #b38b00;
-        }
-
-        .attempt-icon {
-            margin-right: 10px;
-            font-size: 0.9rem;
-        }
-
-        .android-version {
-            display: inline-block;
-            background-color: #3DDC84;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            margin-left: 5px;
-            font-weight: 600;
-        }
-
-        .unsupported-device {
-            display: none;
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #fff8e6;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .unsupported-device i {
-            font-size: 2rem;
-            color: #b38b00;
-            margin-bottom: 10px;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 25px 20px;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .settings-btn {
-                width: 100%;
-                padding: 12px 20px;
-            }
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>iCON-Mobile Frp Solutions</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <div class="android-logo">
-            <i class="fab fa-android"></i>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="brand-logo">
+                <i class="fab fa-android" aria-hidden="true"></i>
+                <h1>iCON Mobile FRP Solutions</h1>
+            </div>
+            <div class="device-status">
+                <span id="deviceStatus" class="status-indicator">
+                    <i class="fas fa-circle" aria-hidden="true"></i>
+                    Checking device...
+                </span>
+            </div>
         </div>
-        <h1>Android Device Settings Access</h1>
-        <p>This tool helps you quickly access settings on your Android device <span class="android-version">Version 5-14</span>. Click the button below to open the settings menu directly.</p>
+    </header>
 
-        <button class="settings-btn" id="settingsButton">
-            <i class="fas fa-cog"></i> Open Android Settings
-        </button>
+    <main class="app-main">
+        <!-- Quick Actions Section -->
+        <section class="quick-actions" aria-labelledby="quick-actions-heading">
+            <h2 id="quick-actions-heading">Quick Actions</h2>
+            <div class="action-grid">
+                <button class="action-btn primary" id="emergencyBypass" aria-label="Emergency FRP Bypass">
+                    <i class="fas fa-bolt" aria-hidden="true"></i>
+                    Emergency Bypass
+                </button>
+                <button class="action-btn secondary" id="wifiConnector" aria-label="Connect to WiFi">
+                    <i class="fas fa-wifi" aria-hidden="true"></i>
+                    WiFi Connector
+                </button>
+                <button class="action-btn secondary" id="accountManager" aria-label="Manage Accounts">
+                    <i class="fas fa-user-cog" aria-hidden="true"></i>
+                    Account Manager
+                </button>
+            </div>
+        </section>
 
-        <div class="result-message" id="resultMessage"></div>
+        <!-- Universal Tools Section -->
+        <section class="tool-section" aria-labelledby="universal-tools-heading">
+            <div class="section-header">
+                <h2 id="universal-tools-heading">Universal Tools</h2>
+                <button class="info-btn" id="universalInfo" aria-label="Information about universal tools">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="button-grid">
+                <button class="action-btn settings-btn" id="settingsButton" aria-label="Open Android Settings">
+                    <i class="fas fa-cog" aria-hidden="true"></i>
+                    <span>Android Settings</span>
+                    <span class="btn-subtitle">System configuration</span>
+                </button>
+                
+                <button class="action-btn dial-pad" id="dialpadButton" aria-label="Open Dial Pad">
+                    <i class="fas fa-phone" aria-hidden="true"></i>
+                    <span>Dial Pad</span>
+                    <span class="btn-subtitle">Enter codes</span>
+                </button>
 
-        <div class="attempts-container" id="attemptsContainer">
-            <h3>Attempting to Open Settings</h3>
-            <ul class="attempt-list" id="attemptList">
-                <!-- Attempt items will be added dynamically -->
-            </ul>
+                <button class="action-btn device-lock" id="deviceLockButton" aria-label="Set Device Lock">
+                    <i class="fas fa-lock" aria-hidden="true"></i>
+                    <span>Device Lock</span>
+                    <span class="btn-subtitle">Security settings</span>
+                </button>
+
+                <button class="action-btn google-search" id="googleSearchButton" aria-label="Open Google Search">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <span>Google Search</span>
+                    <span class="btn-subtitle">Web access</span>
+                </button>
+
+                <button class="action-btn activity-launcher" id="activityLauncherButton" aria-label="Open Activity Launcher">
+                    <i class="fas fa-rocket" aria-hidden="true"></i>
+                    <span>Activity Launcher</span>
+                    <span class="btn-subtitle">Advanced options</span>
+                </button>
+
+                <button class="action-btn assistant" id="assistantButton" aria-label="Open Google Assistant">
+                    <i class="fas fa-microphone" aria-hidden="true"></i>
+                    <span>Google Assistant</span>
+                    <span class="btn-subtitle">Voice commands</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Brand-specific Sections -->
+        <section class="brand-sections-container">
+            <div class="section-header">
+                <h2 id="brand-tools-heading">Brand-Specific Tools</h2>
+            </div>
+            
+            <div class="brand-sections" id="brandSectionsContainer">
+                <!-- Brand sections will be dynamically generated here -->
+            </div>
+        </section>
+
+        <!-- Tutorial Section -->
+        <section class="tutorial-section" aria-labelledby="tutorial-heading">
+            <h2 id="tutorial-heading">FRP Bypass Guide</h2>
+            <div class="tutorial-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Connect to Internet</h3>
+                        <p>Use WiFi Connector or emergency tools to establish internet connection.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Access Settings</h3>
+                        <p>Open Android Settings or use brand-specific tools to access device settings.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Bypass FRP Lock</h3>
+                        <p>Use appropriate tools based on your device brand and Android version.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Result Message Area -->
+        <div class="result-container" role="status" aria-live="polite">
+            <div class="result-message" id="resultMessage"></div>
+            <button class="close-result" id="closeResult" aria-label="Close message">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
         </div>
+    </main>
 
-        <div class="device-info" id="deviceInfo">
-            <h3>Device Information</h3>
-            <p id="platformInfo"></p>
-            <p id="androidVersionInfo"></p>
-            <p id="languageInfo"></p>
-            <p id="timezoneInfo"></p>
-            <p id="screenInfo"></p>
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p class="copyright">2025© iCON Mobile. All Rights Reserved.</p>
+            <div class="footer-links">
+                <button id="privacyBtn" class="footer-link">Privacy Policy</button>
+                <button id="termsBtn" class="footer-link">Terms of Service</button>
+                <button id="supportBtn" class="footer-link">Support</button>
+            </div>
         </div>
+    </footer>
 
-        <div class="unsupported-device" id="unsupportedDevice">
-            <i class="fas fa-exclamation-triangle"></i>
-            <h3>Unsupported Device</h3>
-            <p>This tool is designed specifically for Android devices (versions 5-14).</p>
-            <p>Your device appears to be incompatible with this feature.</p>
+    <!-- Modal for additional information -->
+    <div class="modal" id="infoModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Information</h2>
+                <button class="close-modal" id="closeModal" aria-label="Close modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal content will be inserted here -->
+            </div>
         </div>
-
-        <p class="note">Note: The exact behavior may vary depending on your Android version and device manufacturer.</p>
-        <p class="reserve"> 2025©iCON Mobile. All Right Reserve.</p>
     </div>
 
-        <script>
-        document.getElementById('settingsButton').addEventListener('click', function() {
-            const button = this;
-            button.disabled = true;
-            button.innerHTML = '<i class="fas fa-cog fa-spin"></i> Attempting...';
+    <script>
+        // Enhanced Application Configuration
+        const APP_CONFIG = {
+            brandPackages: {
+                samsung: {
+                    name: "Samsung",
+                    settings: 'com.android.settings',
+                    file: 'com.sec.android.app.myfiles',
+                    browser: 'com.sec.android.app.sbrowser',
+                    message: 'com.samsung.android.messaging',
+                    tips: "For Samsung devices, try using the emergency call feature or Bixby voice assistant if available."
+                },
+                huawei: {
+                    name: "Huawei",
+                    settings: 'com.android.settings',
+                    file: 'com.huawei.hidisk',
+                    browser: 'com.huawei.browser',
+                    message: 'com.huawei.message',
+                    tips: "Huawei devices may have HiVoice or other proprietary assistants that can help bypass FRP."
+                },
+                xiaomi: {
+                    name: "Xiaomi",
+                    settings: 'com.android.settings',
+                    file: 'com.android.fileexplorer',
+                    browser: 'com.android.browser',
+                    message: 'com.android.mms',
+                    tips: "MIUI devices often respond well to the 'TalkBack' accessibility feature for FRP bypass."
+                },
+                oppo: {
+                    name: "OPPO",
+                    settings: 'com.android.settings',
+                    file: 'com.coloros.filemanager',
+                    browser: 'com.android.browser',
+                    message: 'com.android.mms',
+                    tips: "ColorOS devices may respond to specific dialer codes or the Breeno voice assistant."
+                },
+                vivo: {
+                    name: "Vivo",
+                    settings: 'com.android.settings',
+                    file: 'com.bbk.filemanager',
+                    browser: 'com.vivo.browser',
+                    message: 'com.android.mms',
+                    tips: "Try using Vivo's Jovi voice assistant or the emergency call feature for FRP bypass."
+                },
+                realme: {
+                    name: "Realme",
+                    settings: 'com.android.settings',
+                    file: 'com.coloros.filemanager',
+                    browser: 'com.android.browser',
+                    message: 'com.android.mms',
+                    tips: "Realme UI is based on ColorOS, so similar methods may work. Try the emergency call feature."
+                },
+                oneplus: {
+                    name: "OnePlus",
+                    settings: 'com.android.settings',
+                    file: 'com.oneplus.filemanager',
+                    browser: 'com.android.browser',
+                    message: 'com.android.mms',
+                    tips: "OxygenOS devices may respond to specific dialer codes or the Google Assistant method."
+                },
+                techno: {
+                    name: "Tecno",
+                    settings: 'com.android.settings',
+                    file: 'com.transsion.filemanager',
+                    browser: 'com.transsion.ibrowser',
+                    message: 'com.android.mms',
+                    tips: "HiOS devices might have specific vulnerabilities in older versions. Try Google Voice Match."
+                },
+                nokia: {
+                    name: "Nokia",
+                    settings: 'com.android.settings',
+                    file: 'com.nokia.filemanager',
+                    browser: 'com.android.browser',
+                    message: 'com.android.mms',
+                    tips: "Stock Android devices often have fewer restrictions. Try the standard Google Assistant method."
+                }
+            },
+            commonPackages: {
+                chrome: {
+                    package: 'com.android.chrome',
+                    name: 'Chrome Browser'
+                },
+                youtube: {
+                    package: 'com.google.android.youtube',
+                    name: 'YouTube'
+                },
+                maps: {
+                    package: 'com.google.android.apps.maps',
+                    name: 'Google Maps'
+                },
+                assistant: {
+                    package: 'com.google.android.apps.googleassistant',
+                    name: 'Google Assistant'
+                },
+                gmail: {
+                    package: 'com.google.android.gm',
+                    name: 'Gmail'
+                },
+                photos: {
+                    package: 'com.google.android.apps.photos',
+                    name: 'Google Photos'
+                }
+            },
+            universalIntents: {
+                settings: [
+                    'intent:#Intent;action=android.settings.SETTINGS;end',
+                    'intent://settings/#Intent;package=com.android.settings;end',
+                    'intent://android.settings.SETTINGS#Intent;end'
+                ],
+                deviceLock: 'intent://com.google.android.gms/#Intent;scheme=promote_smartlock_scheme;end',
+                googleSearch: 'intent://com.google.android.googlequicksearchbox#Intent;scheme=android-app;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.google.android.googlequicksearchbox%26referrer%3Dutm_source%253Dgoogle%2526utm_medium%253Dorganic%2526utm_term%253Dgoogle%2Bsearch%26pcampaignid%3DAPPU_19_CHS7Wov_FIOt0gTMo4eQDA;end',
+                activityLauncher: 'intent://com.google.android.gms/#Intent;scheme=promote_smartlock_scheme;end',
+                assistant: 'intent://com.google.android.apps.googleassistant/#Intent;scheme=android-app;end',
+                dialPad: 'tel:',
+                wifiSettings: 'intent://com.android.settings/#Intent;action=android.settings.WIFI_SETTINGS;end',
+                emergencyCall: 'tel:112'
+            },
+            brands: ['samsung', 'huawei', 'xiaomi', 'oppo', 'vivo', 'realme', 'oneplus', 'techno', 'nokia']
+        };
 
-            // Show device information
-            const deviceInfo = document.getElementById('deviceInfo');
-            deviceInfo.style.display = 'block';
+        // Enhanced Application State
+        const AppState = {
+            isAndroid: false,
+            androidVersion: null,
+            currentOperation: null,
+            activeModal: null
+        };
 
-            // Get device information
-            document.getElementById('platformInfo').textContent = `Platform: ${navigator.platform}`;
-            document.getElementById('languageInfo').textContent = `Language: ${navigator.language}`;
-            document.getElementById('timezoneInfo').textContent = `Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
-            document.getElementById('screenInfo').textContent = `Screen: ${screen.width} × ${screen.height}`;
+        // Enhanced DOM Elements
+        const DOM = {
+            resultMessage: null,
+            brandSections: null,
+            deviceStatus: null,
+            closeResult: null,
+            infoModal: null,
+            closeModal: null,
+            modalBody: null,
+            modalTitle: null
+        };
 
-            const resultMessage = document.getElementById('resultMessage');
-            const attemptsContainer = document.getElementById('attemptsContainer');
-            const attemptList = document.getElementById('attemptList');
+        // Enhanced Utility Functions
+        const Utils = {
+            /**
+             * Check if the device is Android and get version
+             * @returns {boolean}
+             */
+            checkAndroidDevice() {
+                const userAgent = navigator.userAgent;
+                const isAndroid = /Android/i.test(userAgent);
+                
+                if (isAndroid) {
+                    const versionMatch = userAgent.match(/Android (\d+(?:\.\d+)?)/);
+                    AppState.androidVersion = versionMatch ? versionMatch[1] : 'Unknown';
+                }
+                
+                return isAndroid;
+            },
 
-            // Clear previous attempts
-            attemptList.innerHTML = '';
-            attemptsContainer.style.display = 'block';
+            /**
+             * Attempt to open an intent using multiple methods
+             * @param {string|function} intent - The intent to open
+             * @returns {boolean} Success status
+             */
+            openIntent(intent) {
+                try {
+                    if (typeof intent === 'function') {
+                        intent();
+                    } else {
+                        window.location.href = intent;
+                    }
+                    return true;
+                } catch (e) {
+                    try {
+                        window.open(intent, '_blank');
+                        return true;
+                    } catch (e2) {
+                        return false;
+                    }
+                }
+            },
 
-            let message = '';
-            let messageClass = '';
-            let success = false;
-
-            // Create a promise-based function to attempt settings opening
-            function attemptSettingsOpen(methodName, action, delay = 100) {
-                return new Promise((resolve) => {
-                    // Add attempt to UI
-                    const attemptItem = document.createElement('li');
-                    attemptItem.className = 'attempt-item attempting';
-                    attemptItem.innerHTML = `<span class="attempt-icon"><i class="fas fa-sync-alt fa-spin"></i></span> ${methodName}`;
-                    attemptList.appendChild(attemptItem);
-
+            /**
+             * Show a result message to the user
+             * @param {string} message - The message to display
+             * @param {string} type - The message type (success, warning, error, info)
+             */
+            showMessage(message, type = 'info') {
+                if (!DOM.resultMessage) return;
+                
+                DOM.resultMessage.textContent = message;
+                DOM.resultMessage.className = `result-message ${type}`;
+                DOM.resultMessage.parentElement.style.display = 'flex';
+                
+                // Auto-hide success messages after 5 seconds
+                if (type === 'success') {
                     setTimeout(() => {
-                        try {
-                            if (typeof action === 'function') {
-                                action();
-                            } else {
-                                window.location.href = action;
-                            }
+                        this.hideMessage();
+                    }, 5000);
+                }
+            },
 
-                            // If we reach here, the action was successful
-                            attemptItem.className = 'attempt-item success';
-                            attemptItem.innerHTML = `<span class="attempt-icon"><i class="fas fa-check"></i></span> ${methodName} - Success`;
-                            resolve(true);
-                        } catch (e) {
-                            attemptItem.className = 'attempt-item failed';
-                            attemptItem.innerHTML = `<span class="attempt-icon"><i class="fas fa-times"></i></span> ${methodName} - Failed`;
-                            resolve(false);
+            /**
+             * Hide the result message
+             */
+            hideMessage() {
+                if (DOM.resultMessage && DOM.resultMessage.parentElement) {
+                    DOM.resultMessage.parentElement.style.display = 'none';
+                }
+            },
+
+            /**
+             * Set button state during operations
+             * @param {HTMLElement} button - The button element
+             * @param {string} state - The state (loading, success, error, reset)
+             * @param {string} originalText - The original button text
+             */
+            setButtonState(button, state, originalText = '') {
+                const originalHTML = button.innerHTML;
+                
+                switch (state) {
+                    case 'loading':
+                        button.disabled = true;
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Attempting...';
+                        break;
+                    case 'success':
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> Success!';
+                        setTimeout(() => {
+                            button.innerHTML = originalHTML;
+                        }, 2000);
+                        break;
+                    case 'error':
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Failed';
+                        setTimeout(() => {
+                            button.innerHTML = originalHTML;
+                        }, 2000);
+                        break;
+                    case 'reset':
+                        button.disabled = false;
+                        button.innerHTML = originalHTML;
+                        break;
+                }
+            },
+
+            /**
+             * Show modal with content
+             * @param {string} title - Modal title
+             * @param {string} content - Modal content HTML
+             */
+            showModal(title, content) {
+                if (!DOM.infoModal || !DOM.modalBody || !DOM.modalTitle) return;
+                
+                DOM.modalTitle.textContent = title;
+                DOM.modalBody.innerHTML = content;
+                DOM.infoModal.setAttribute('aria-hidden', 'false');
+                DOM.infoModal.style.display = 'flex';
+                AppState.activeModal = 'info';
+            },
+
+            /**
+             * Hide active modal
+             */
+            hideModal() {
+                if (!DOM.infoModal) return;
+                
+                DOM.infoModal.setAttribute('aria-hidden', 'true');
+                DOM.infoModal.style.display = 'none';
+                AppState.activeModal = null;
+            },
+
+            /**
+             * Detect device brand if possible
+             * @returns {string|null} Detected brand or null
+             */
+            detectDeviceBrand() {
+                const userAgent = navigator.userAgent.toLowerCase();
+                
+                if (userAgent.includes('samsung')) return 'samsung';
+                if (userAgent.includes('huawei') || userAgent.includes('honor')) return 'huawei';
+                if (userAgent.includes('xiaomi') || userAgent.includes('redmi') || userAgent.includes('poco')) return 'xiaomi';
+                if (userAgent.includes('oppo')) return 'oppo';
+                if (userAgent.includes('vivo')) return 'vivo';
+                if (userAgent.includes('realme')) return 'realme';
+                if (userAgent.includes('oneplus')) return 'oneplus';
+                if (userAgent.includes('tecno')) return 'techno';
+                if (userAgent.includes('nokia')) return 'nokia';
+                
+                return null;
+            }
+        };
+
+        // Enhanced Brand Management
+        const BrandManager = {
+            /**
+             * Get package name for a specific brand and app
+             * @param {string} brand - The device brand
+             * @param {string} appType - The app type
+             * @returns {string} Package name
+             */
+            getPackageName(brand, appType) {
+                // Check common packages first
+                if (APP_CONFIG.commonPackages[appType]) {
+                    return APP_CONFIG.commonPackages[appType].package;
+                }
+                
+                // Check brand-specific packages
+                if (APP_CONFIG.brandPackages[brand] && APP_CONFIG.brandPackages[brand][appType]) {
+                    return APP_CONFIG.brandPackages[brand][appType];
+                }
+                
+                return null;
+            },
+
+            /**
+             * Generate intent for a specific app
+             * @param {string} packageName - The app package name
+             * @returns {string} Intent string
+             */
+            generateIntent(packageName) {
+                return `intent://${packageName}/#Intent;scheme=android-app;end`;
+            },
+
+            /**
+             * Create brand section in the DOM
+             * @param {string} brand - The brand name
+             */
+            createBrandSection(brand) {
+                const brandData = APP_CONFIG.brandPackages[brand];
+                if (!brandData) return;
+                
+                const section = document.createElement('section');
+                section.className = 'brand-section';
+                section.setAttribute('aria-labelledby', `${brand}-heading`);
+                
+                const displayName = brandData.name;
+                
+                section.innerHTML = `
+                    <div class="brand-header">
+                        <h2 id="${brand}-heading">${displayName}</h2>
+                        <button class="brand-info-btn" data-brand="${brand}" aria-label="Information about ${displayName}">
+                            <i class="fas fa-info-circle" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="button-grid">
+                        <button class="brand-btn settings" data-brand="${brand}" data-app="settings" aria-label="Open Settings on ${displayName}">
+                            <i class="fas fa-cog" aria-hidden="true"></i>
+                            <span>Settings</span>
+                        </button>
+                        <button class="brand-btn file" data-brand="${brand}" data-app="file" aria-label="Open File Manager on ${displayName}">
+                            <i class="fas fa-folder" aria-hidden="true"></i>
+                            <span>File Manager</span>
+                        </button>
+                        <button class="brand-btn chrome" data-brand="${brand}" data-app="chrome" aria-label="Open Chrome on ${displayName}">
+                            <i class="fab fa-chrome" aria-hidden="true"></i>
+                            <span>Chrome</span>
+                        </button>
+                        <button class="brand-btn browser" data-brand="${brand}" data-app="browser" aria-label="Open Browser on ${displayName}">
+                            <i class="fas fa-globe" aria-hidden="true"></i>
+                            <span>Browser</span>
+                        </button>
+                        <button class="brand-btn youtube" data-brand="${brand}" data-app="youtube" aria-label="Open YouTube on ${displayName}">
+                            <i class="fab fa-youtube" aria-hidden="true"></i>
+                            <span>YouTube</span>
+                        </button>
+                        <button class="brand-btn maps" data-brand="${brand}" data-app="maps" aria-label="Open Google Maps on ${displayName}">
+                            <i class="fas fa-map" aria-hidden="true"></i>
+                            <span>Maps</span>
+                        </button>
+                        <button class="brand-btn message" data-brand="${brand}" data-app="message" aria-label="Open Messages on ${displayName}">
+                            <i class="fas fa-comment" aria-hidden="true"></i>
+                            <span>Messages</span>
+                        </button>
+                        <button class="brand-btn assistant" data-brand="${brand}" data-app="assistant" aria-label="Open Assistant on ${displayName}">
+                            <i class="fas fa-microphone" aria-hidden="true"></i>
+                            <span>Assistant</span>
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listeners to buttons
+                const buttons = section.querySelectorAll('.brand-btn');
+                buttons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const brand = e.currentTarget.getAttribute('data-brand');
+                        const appType = e.currentTarget.getAttribute('data-app');
+                        this.handleBrandButtonClick(brand, appType, e.currentTarget);
+                    });
+                });
+                
+                // Add event listener to info button
+                const infoBtn = section.querySelector('.brand-info-btn');
+                infoBtn.addEventListener('click', () => {
+                    this.showBrandInfo(brand);
+                });
+                
+                DOM.brandSections.appendChild(section);
+            },
+
+            /**
+             * Handle brand button click
+             * @param {string} brand - The device brand
+             * @param {string} appType - The app type
+             * @param {HTMLElement} button - The clicked button
+             */
+            handleBrandButtonClick(brand, appType, button) {
+                if (!AppState.isAndroid) return;
+                
+                const originalHTML = button.innerHTML;
+                Utils.setButtonState(button, 'loading', originalHTML);
+                
+                const packageName = this.getPackageName(brand, appType);
+                
+                if (!packageName) {
+                    Utils.showMessage(`Package not found for ${brand} ${appType}`, 'error');
+                    Utils.setButtonState(button, 'error', originalHTML);
+                    return;
+                }
+                
+                const intent = this.generateIntent(packageName);
+                const success = Utils.openIntent(intent);
+                
+                if (success) {
+                    Utils.showMessage(`${APP_CONFIG.brandPackages[brand].name} ${appType} opened successfully!`, 'success');
+                    Utils.setButtonState(button, 'success', originalHTML);
+                } else {
+                    Utils.showMessage(`Could not open ${brand} ${appType}. Please try manually.`, 'warning');
+                    Utils.setButtonState(button, 'reset', originalHTML);
+                }
+            },
+
+            /**
+             * Show brand information in modal
+             * @param {string} brand - The brand to show info for
+             */
+            showBrandInfo(brand) {
+                const brandData = APP_CONFIG.brandPackages[brand];
+                if (!brandData) return;
+                
+                const content = `
+                    <div class="brand-info">
+                        <h3>${brandData.name} FRP Bypass Tips</h3>
+                        <p>${brandData.tips || 'No specific tips available for this brand.'}</p>
+                        <div class="brand-apps">
+                            <h4>Available Apps:</h4>
+                            <ul>
+                                ${Object.keys(brandData)
+                                    .filter(key => !['name', 'tips'].includes(key))
+                                    .map(key => `<li>${key}: ${brandData[key]}</li>`)
+                                    .join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                
+                Utils.showModal(`${brandData.name} Information`, content);
+            }
+        };
+
+        // Enhanced Universal Tools Management
+        const UniversalTools = {
+            /**
+             * Initialize universal tool buttons
+             */
+            init() {
+                this.setupQuickActions();
+                this.setupSettingsButton();
+                this.setupDialPadButton();
+                this.setupDeviceLockButton();
+                this.setupGoogleSearchButton();
+                this.setupActivityLauncherButton();
+                this.setupAssistantButton();
+                this.setupInfoButtons();
+            },
+
+            /**
+             * Setup quick action buttons
+             */
+            setupQuickActions() {
+                // Emergency Bypass
+                document.getElementById('emergencyBypass').addEventListener('click', () => {
+                    if (!AppState.isAndroid) return;
+                    
+                    Utils.showMessage('Attempting emergency FRP bypass methods...', 'info');
+                    
+                    // Try multiple emergency methods
+                    const methods = [
+                        APP_CONFIG.universalIntents.emergencyCall,
+                        APP_CONFIG.universalIntents.wifiSettings,
+                        APP_CONFIG.universalIntents.assistant
+                    ];
+                    
+                    let success = false;
+                    for (const method of methods) {
+                        if (Utils.openIntent(method)) {
+                            success = true;
+                            break;
                         }
-                    }, delay);
+                    }
+                    
+                    if (success) {
+                        Utils.showMessage('Emergency bypass initiated! Follow on-screen instructions.', 'success');
+                    } else {
+                        Utils.showMessage('Emergency methods unavailable. Try brand-specific tools.', 'warning');
+                    }
+                });
+                
+                // WiFi Connector
+                document.getElementById('wifiConnector').addEventListener('click', () => {
+                    if (!AppState.isAndroid) return;
+                    
+                    const success = Utils.openIntent(APP_CONFIG.universalIntents.wifiSettings);
+                    
+                    if (success) {
+                        Utils.showMessage('WiFi settings opened. Connect to a network to proceed.', 'success');
+                    } else {
+                        Utils.showMessage('Could not open WiFi settings directly. Try through Settings.', 'warning');
+                    }
+                });
+                
+                // Account Manager
+                document.getElementById('accountManager').addEventListener('click', () => {
+                    if (!AppState.isAndroid) return;
+                    
+                    Utils.showMessage('Account management requires internet connection first.', 'info');
+                });
+            },
+
+            /**
+             * Setup settings button with multiple intent attempts
+             */
+            setupSettingsButton() {
+                const button = document.getElementById('settingsButton');
+                
+                button.addEventListener('click', () => {
+                    if (!AppState.isAndroid) return;
+                    
+                    Utils.setButtonState(button, 'loading');
+                    
+                    let success = false;
+                    for (const intent of APP_CONFIG.universalIntents.settings) {
+                        if (Utils.openIntent(intent)) {
+                            success = true;
+                            break;
+                        }
+                    }
+                    
+                    if (success) {
+                        Utils.showMessage('Settings opened successfully!', 'success');
+                        Utils.setButtonState(button, 'success');
+                    } else {
+                        Utils.showMessage('Could not open settings directly. Please open Settings manually.', 'warning');
+                        Utils.setButtonState(button, 'reset');
+                    }
+                });
+            },
+
+            /**
+             * Setup dial pad button
+             */
+            setupDialPadButton() {
+                this.setupUniversalButton(
+                    'dialpadButton',
+                    APP_CONFIG.universalIntents.dialPad,
+                    'Dial Pad'
+                );
+            },
+
+            /**
+             * Setup device lock button
+             */
+            setupDeviceLockButton() {
+                this.setupUniversalButton(
+                    'deviceLockButton',
+                    APP_CONFIG.universalIntents.deviceLock,
+                    'Set Device Lock'
+                );
+            },
+
+            /**
+             * Setup Google search button
+             */
+            setupGoogleSearchButton() {
+                this.setupUniversalButton(
+                    'googleSearchButton',
+                    APP_CONFIG.universalIntents.googleSearch,
+                    'Google Search'
+                );
+            },
+
+            /**
+             * Setup activity launcher button
+             */
+            setupActivityLauncherButton() {
+                this.setupUniversalButton(
+                    'activityLauncherButton',
+                    APP_CONFIG.universalIntents.activityLauncher,
+                    'Activity Launcher'
+                );
+            },
+
+            /**
+             * Setup assistant button
+             */
+            setupAssistantButton() {
+                this.setupUniversalButton(
+                    'assistantButton',
+                    APP_CONFIG.universalIntents.assistant,
+                    'Open Assistant'
+                );
+            },
+
+            /**
+             * Setup information buttons
+             */
+            setupInfoButtons() {
+                // Universal tools info
+                document.getElementById('universalInfo').addEventListener('click', () => {
+                    const content = `
+                        <div class="info-content">
+                            <h3>Universal FRP Bypass Tools</h3>
+                            <p>These tools work across most Android devices and versions:</p>
+                            <ul>
+                                <li><strong>Android Settings:</strong> Access device configuration</li>
+                                <li><strong>Dial Pad:</strong> Enter special codes (e.g., *#*#4636#*#*)</li>
+                                <li><strong>Google Search:</strong> Access web for account recovery</li>
+                                <li><strong>Google Assistant:</strong> Use voice commands to bypass</li>
+                            </ul>
+                            <p>If universal tools don't work, try the brand-specific options below.</p>
+                        </div>
+                    `;
+                    
+                    Utils.showModal('Universal Tools Information', content);
+                });
+                
+                // Footer links
+                document.getElementById('privacyBtn').addEventListener('click', () => {
+                    Utils.showModal('Privacy Policy', '<p>Privacy policy information would be displayed here.</p>');
+                });
+                
+                document.getElementById('termsBtn').addEventListener('click', () => {
+                    Utils.showModal('Terms of Service', '<p>Terms of service information would be displayed here.</p>');
+                });
+                
+                document.getElementById('supportBtn').addEventListener('click', () => {
+                    Utils.showModal('Support', '<p>Contact support for assistance with FRP bypass.</p>');
+                });
+            },
+
+            /**
+             * Generic setup for universal buttons
+             * @param {string} buttonId - The button element ID
+             * @param {string} intent - The intent to open
+             * @param {string} buttonText - The button display text
+             */
+            setupUniversalButton(buttonId, intent, buttonText) {
+                const button = document.getElementById(buttonId);
+                
+                button.addEventListener('click', () => {
+                    if (!AppState.isAndroid) return;
+                    
+                    Utils.setButtonState(button, 'loading');
+                    
+                    const success = Utils.openIntent(intent);
+                    
+                    if (success) {
+                        Utils.showMessage(`${buttonText} opened successfully!`, 'success');
+                        Utils.setButtonState(button, 'success');
+                    } else {
+                        Utils.showMessage(`Could not open ${buttonText} directly. Please try manually.`, 'warning');
+                        Utils.setButtonState(button, 'reset');
+                    }
                 });
             }
+        };
 
-            // Function to run all attempts sequentially
-            async function runAllAttempts() {
-                const userAgent = navigator.userAgent;
-
-                if (userAgent.match(/Android/i)) {
-                    // Android attempts
-                    await attemptSettingsOpen(
-                        'Android Settings Intent', 
-                        'intent:#Intent;action=android.settings.SETTINGS;end'
-                    );
-
-                    await attemptSettingsOpen(
-                        'Android Settings Package', 
-                        'intent://settings/#Intent;package=com.android.settings;end', 
-                        200
-                    );
-
-                    await attemptSettingsOpen(
-                        'Android Settings URI', 
-                        'intent://android.settings.SETTINGS#Intent;end', 
-                        300
-                    );
-
-                    await attemptSettingsOpen(
-                        'Android Settings Fallback', 
-                        () => {
-                            window.open('intent:#Intent;action=android.settings.SETTINGS;end', '_blank');
-                        }, 
-                        400
-                    );
-
-                } else if (userAgent.match(/iPhone|iPad|iPod/i)) {
-                    // iOS attempts
-                    await attemptSettingsOpen(
-                        'iOS App Preferences', 
-                        'App-Prefs:'
-                    );
-
-                    await attemptSettingsOpen(
-                        'iOS Settings Root', 
-                        'App-Prefs:root=Settings'
-                    );
-
-                    await attemptSettingsOpen(
-                        'iOS Settings Fallback', 
-                        () => {
-                            window.open('App-Prefs:', '_blank');
-                        }, 
-                        200
-                    );
-
-                } else if (userAgent.match(/Windows/i)) {
-                    // Windows attempts
-                    await attemptSettingsOpen(
-                        'Windows Settings URI', 
-                        'ms-settings:'
-                    );
-
-                    await attemptSettingsOpen(
-                        'Windows Settings System', 
-                        'ms-settings:System'
-                    );
-
-                    await attemptSettingsOpen(
-                        'Windows Settings Display', 
-                        'ms-settings:display'
-                    );
-
-                    await attemptSettingsOpen(
-                        'Windows Settings Fallback', 
-                        () => {
-                            window.open('ms-settings:', '_blank');
-                        }, 
-                        200
-                    );
-
-                } else {
-                    // Generic attempts for other platforms
-                    await attemptSettingsOpen(
-                        'Generic Settings', 
-                        'settings:'
-                    );
-
-                    await attemptSettingsOpen(
-                        'Generic System Preferences', 
-                        'systempreferences:'
-                    );
-
-                    await attemptSettingsOpen(
-                        'Generic Preferences', 
-                        'prefs:'
-                    );
+        // Enhanced Application Initialization
+        const App = {
+            /**
+             * Initialize the application
+             */
+            init() {
+                this.cacheDOM();
+                this.checkDeviceCompatibility();
+                this.setupEventListeners();
+                this.createBrandSections();
+                
+                if (AppState.isAndroid) {
+                    UniversalTools.init();
                 }
+                
+                this.updateDeviceStatus();
+            },
 
-                // Check if any attempt was successful
-                const successItems = document.querySelectorAll('.attempt-item.success');
-                success = successItems.length > 0;
+            /**
+             * Cache DOM elements for performance
+             */
+            cacheDOM() {
+                DOM.resultMessage = document.getElementById('resultMessage');
+                DOM.brandSections = document.getElementById('brandSectionsContainer');
+                DOM.deviceStatus = document.getElementById('deviceStatus');
+                DOM.closeResult = document.getElementById('closeResult');
+                DOM.infoModal = document.getElementById('infoModal');
+                DOM.closeModal = document.getElementById('closeModal');
+                DOM.modalBody = document.getElementById('modalBody');
+                DOM.modalTitle = document.getElementById('modalTitle');
+            },
 
-                if (success) {
-                    message = 'Settings opened successfully!';
-                    messageClass = 'success';
-                } else {
-                    message = 'Could not open settings directly. Please open Settings manually from your device.';
-                    messageClass = 'warning';
+            /**
+             * Check if device is compatible (Android)
+             */
+            checkDeviceCompatibility() {
+                AppState.isAndroid = Utils.checkAndroidDevice();
+                
+                if (!AppState.isAndroid) {
+                    this.disableAllButtons();
+                    Utils.showMessage('This tool only works on Android devices.', 'error');
                 }
+            },
 
-                // Display result message
-                resultMessage.textContent = message;
-                resultMessage.className = 'result-message ' + messageClass;
-                resultMessage.style.display = 'block';
+            /**
+             * Update device status display
+             */
+            updateDeviceStatus() {
+                if (!DOM.deviceStatus) return;
+                
+                if (AppState.isAndroid) {
+                    const detectedBrand = Utils.detectDeviceBrand();
+                    const brandText = detectedBrand ? 
+                        `Detected: ${APP_CONFIG.brandPackages[detectedBrand].name}` : 
+                        'Android Device';
+                    
+                    DOM.deviceStatus.innerHTML = `
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        ${brandText} (Android ${AppState.androidVersion})
+                    `;
+                    DOM.deviceStatus.className = 'status-indicator success';
+                } else {
+                    DOM.deviceStatus.innerHTML = `
+                        <i class="fas fa-times-circle" aria-hidden="true"></i>
+                        Non-Android Device
+                    `;
+                    DOM.deviceStatus.className = 'status-indicator error';
+                }
+            },
 
-                // Reset button
-                button.disabled = false;
-                button.innerHTML = '<i class="fas fa-cog"></i> Open Settings';
+            /**
+             * Disable all buttons for non-Android devices
+             */
+            disableAllButtons() {
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(button => {
+                    button.disabled = true;
+                    if (button.classList.contains('action-btn')) {
+                        button.innerHTML = '<i class="fas fa-ban" aria-hidden="true"></i> Android Only';
+                    }
+                });
+            },
+
+            /**
+             * Set up global event listeners
+             */
+            setupEventListeners() {
+                // Close result message
+                if (DOM.closeResult) {
+                    DOM.closeResult.addEventListener('click', () => {
+                        Utils.hideMessage();
+                    });
+                }
+                
+                // Close modal
+                if (DOM.closeModal) {
+                    DOM.closeModal.addEventListener('click', () => {
+                        Utils.hideModal();
+                    });
+                }
+                
+                // Close modal when clicking outside
+                if (DOM.infoModal) {
+                    DOM.infoModal.addEventListener('click', (e) => {
+                        if (e.target === DOM.infoModal) {
+                            Utils.hideModal();
+                        }
+                    });
+                }
+                
+                // Escape key to close modals/messages
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        if (AppState.activeModal) {
+                            Utils.hideModal();
+                        } else {
+                            Utils.hideMessage();
+                        }
+                    }
+                });
+            },
+
+            /**
+             * Create brand sections dynamically
+             */
+            createBrandSections() {
+                APP_CONFIG.brands.forEach(brand => {
+                    BrandManager.createBrandSection(brand);
+                });
             }
+        };
 
-            // Start the attempts
-            runAllAttempts();
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
         });
     </script>
 </body>
